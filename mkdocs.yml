@@ -1,0 +1,98 @@
+site_name: Portico Build System
+site_description: Python framework for GPT-powered applications using hexagonal architecture
+site_author: Portico Team
+site_url: https://docs.portico.dev
+
+theme:
+  name: material
+  favicon: images/favicon.png
+  palette:
+    scheme: default
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - autorefs
+  - macros
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            # Docstring style
+            docstring_style: google
+            docstring_section_style: spacy
+
+            # Display options
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            show_signature_annotations: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            separate_signature: true
+
+            # Content options
+            members_order: source
+            group_by_category: true
+            show_category_heading: true
+
+            # Signature options
+            signature_crossrefs: true
+
+            # Additional
+            show_bases: true
+            show_inheritance_diagram: false
+
+markdown_extensions:
+  # Admonitions (notes, warnings, etc.)
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
+  # Code highlighting
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: [docs, .]
+      check_paths: true
+
+  # Tabs
+  - pymdownx.tabbed:
+      alternate_style: true
+
+  # Tables and attributes
+  - tables
+  - attr_list
+  - md_in_html
+
+  # Better lists
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+
+extra:
+  social: []
+
+extra_css:
+  - stylesheets/extra.css
+  - https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css
+
+nav:
+  - Home: index.md

@@ -1,0 +1,106 @@
+/* Custom styling for home page only */
+.md-content__inner.home-page {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.md-content__inner.home-page .md-content__inner-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Animated background particles */
+.md-content__inner.home-page .md-content__inner-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) scale(1);
+    }
+    50% {
+        transform: translateY(-20px) scale(1.05);
+    }
+}
+
+.md-content__inner.home-page h1 {
+    font-size: 5rem !important;
+    font-weight: 300 !important;
+    color: white !important;
+    text-align: center !important;
+    margin: 0 !important;
+    letter-spacing: 0.1em !important;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 1s ease-out;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hide navigation for home page */
+.md-content__inner.home-page ~ .md-sidebar {
+    display: none;
+}
+
+/* Responsive design */
+@media screen and (max-width: 76.1875em) {
+    .md-content__inner.home-page h1 {
+        font-size: 3.5rem !important;
+    }
+}
+
+@media screen and (max-width: 44.9375em) {
+    .md-content__inner.home-page h1 {
+        font-size: 2.5rem !important;
+    }
+}
+
+/* Subtle pulse effect */
+.md-content__inner.home-page h1::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 2px;
+    background: white;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        width: 100px;
+    }
+    50% {
+        opacity: 0.5;
+        width: 150px;
+    }
+}
