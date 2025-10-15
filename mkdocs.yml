@@ -3,6 +3,10 @@ site_description: Python framework for GPT-powered applications using hexagonal 
 site_author: Portico Team
 site_url: https://docs.portico.dev
 
+# Exclude template files from rendering
+exclude_docs: |
+  _templates/
+
 theme:
   name: material
   favicon: images/favicon.png
