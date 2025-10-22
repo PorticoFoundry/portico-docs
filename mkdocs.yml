@@ -101,3 +101,9 @@ extra_css:
 nav:
   - Home: index.md
   - Philosophy: philosophy.md
+  - Ports:
+    - Overview: ports/index.md
+  - Kits:
+    - Overview: kits/index.md
+  - Adapters:
+    - Overview: adapters/index.md

@@ -6,7 +6,7 @@ Portico is a Python framework that gives you the building blocks to create AI-po
 
 Think of Portico as a set of well-tested, production-ready components for the stuff every AI app needs: authentication, databases, LLM integrations, caching, file storage, and more. But instead of just handing you a pile of code, Portico enforces a clean architecture that keeps your application maintainable as it scales from MVP to production.
 
-The secret? **Hexagonal architecture** (also called "ports and adapters"). Sounds fancy, but the idea is simple: your business logic shouldn't care whether you're using OpenAI or Anthropic, PostgreSQL or SQLite, Redis or in-memory caching. You should be able to swap these out without rewriting your entire application.
+The secret? **Hexagonal architecture** (also called "[ports](ports/index.md) and [adapters](adapters/index.md)"). Sounds fancy, but the idea is simple: your business logic shouldn't care whether you're using OpenAI or Anthropic, PostgreSQL or SQLite, Redis or in-memory caching. You should be able to swap these out without rewriting your entire application.
 
 <div align="center">
   <img src="images/portico_architecture.png" alt="Portico Architecture">
@@ -16,7 +16,7 @@ The secret? **Hexagonal architecture** (also called "ports and adapters"). Sound
 
 Portico organizes code into four clear layers. Once you understand these, everything else clicks into place:
 
-### 1. **Kits** - Your Business Logic
+### 1. **[Kits](kits/index.md)** - Your Business Logic
 
 Kits are where your application logic lives. Think of them as services that do the actual work of your application:
 
@@ -54,7 +54,7 @@ That's it. Just a contract. The kit uses this interface, and adapters implement 
 
 **Why this matters:** Your business logic (`LLMKit`) has no idea if it's talking to OpenAI, Anthropic, or a local model. It just knows it can call `.complete()` and get a response.
 
-### 3. **Adapters** - The Implementations
+### 3. **[Adapters](adapters/index.md)** - The Implementations
 
 Adapters are the concrete implementations of ports. This is where you integrate with external services:
 

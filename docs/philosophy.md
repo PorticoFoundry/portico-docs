@@ -1,6 +1,6 @@
 # Philosophy
 
-Portico is built on the principles of hexagonal architecture (also known as ports and adapters). This isn't just academic theory - it's a practical approach to building applications that stay maintainable as they grow from prototype to production.
+Portico is built on the principles of hexagonal architecture (also known as [ports](ports/index.md) and [adapters](adapters/index.md)). This isn't just academic theory - it's a practical approach to building applications that stay maintainable as they grow from prototype to production.
 
 ## Core Principles
 
@@ -10,7 +10,7 @@ Your business logic should be independent of implementation details. Whether you
 
 ### Dependency Inversion
 
-Kits (your business logic) depend on ports (interfaces), never on adapters (implementations). This inversion means you can test your logic without external dependencies, swap implementations without code changes, and keep your architecture clean as complexity grows.
+[Kits](kits/index.md) (your business logic) depend on ports (interfaces), never on adapters (implementations). This inversion means you can test your logic without external dependencies, swap implementations without code changes, and keep your architecture clean as complexity grows.
 
 ### Composition Root
 
@@ -59,7 +59,7 @@ Portico enforces clean boundaries:
 
 - **Kits** → can only import Ports
 - **Ports** → can't import anything except standard library
-- **Adapters** → implement Ports, can import external libraries
+- **[Adapters](adapters/index.md)** → implement Ports, can import external libraries
 - **Compose** → the only place that wires Kits + Adapters together
 
 These rules are checked on every build. Your architecture stays clean automatically.
