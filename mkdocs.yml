@@ -104,9 +104,15 @@ nav:
   - Philosophy: philosophy.md
   - Ports:
     - Overview: ports/index.md
-    - User Port: ports/user.md
-    - Cache Port: ports/cache.md
     - Audit Port: ports/audit.md
+    - Cache Port: ports/cache.md
+    - Embedding Port: ports/embedding.md
+    - File Storage Port: ports/file_storage.md
+    - LLM Port: ports/llm.md
+    - Permissions Port: ports/permissions.md
+    - Template Port: ports/template.md
+    - User Port: ports/user.md
+    - Vector Store Port: ports/vector_store.md
   - Kits:
     - Overview: kits/index.md
   - Adapters:

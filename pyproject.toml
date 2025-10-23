@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "portico-docs"
+version = "0.1.0"
+description = "Documentation for Portico framework"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.13"
+mkdocs = "^1.6.0"
+mkdocs-material = "^9.5.0"
+mkdocs-macros-plugin = "^1.0.0"
+mkdocs-autorefs = "^1.2.0"
+mkdocstrings = {extras = ["python"], version = "^0.30.0"}
+mkdocstrings-python = "^1.15.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+pytest-asyncio = "^1.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["docs_tests"]
+python_files = ["test_*.py"]
+addopts = "--strict-markers --strict-config"
+asyncio_mode = "auto"
