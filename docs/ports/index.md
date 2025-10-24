@@ -232,22 +232,9 @@ class TemplateRegistry(ABC):
 
 **Pattern**: `{Capability}Storage`
 **Purpose**: Low-level data persistence (typically non-relational)
-**Examples**: `SessionStorage`, `VectorStore`
+**Examples**: `VectorStore`
 
-Storage ports define persistence operations for specific data structures:
-
-```python
-class SessionStorage(ABC):
-    @abstractmethod
-    async def store_session(self, session: SessionData) -> None:
-        """Persist session data."""
-        pass
-
-    @abstractmethod
-    async def get_session(self, token: str) -> Optional[SessionData]:
-        """Retrieve session by token."""
-        pass
-```
+Storage ports define persistence operations for specific data structures, typically for specialized data types like vectors.
 
 ### Processor
 
@@ -280,9 +267,8 @@ Ports for managing users, groups, permissions, and authentication:
 - **User Port** (`user.py`) - User CRUD, authentication, role management
 - **Group Port** (`group.py`) - Organizational hierarchies and group membership
 - **Permissions Port** (`permissions.py`) - Role-based access control (RBAC)
-- **Session Port** (`session.py`) - Session token management
 
-**Common Pattern**: These ports often work together. For example, authentication uses the User port to verify credentials, then creates a session using the Session port.
+**Common Pattern**: These ports often work together. For example, authentication uses the User port to verify credentials and manage user sessions through the auth kit.
 
 ### Infrastructure Services
 
