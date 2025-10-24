@@ -108,9 +108,9 @@ nav:
     - Cache Port: ports/cache.md
     - Embedding Port: ports/embedding.md
     - File Storage Port: ports/file_storage.md
+    - Group Port: ports/group.md
     - LLM Port: ports/llm.md
     - Permissions Port: ports/permissions.md
-    - Session Port: ports/session.md
     - Template Port: ports/template.md
     - User Port: ports/user.md
     - Vector Store Port: ports/vector_store.md
