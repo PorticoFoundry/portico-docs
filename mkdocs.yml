@@ -106,6 +106,7 @@ nav:
     - Overview: ports/index.md
     - Audit Port: ports/audit.md
     - Cache Port: ports/cache.md
+    - Document Processor Port: ports/document_processor.md
     - Embedding Port: ports/embedding.md
     - File Storage Port: ports/file_storage.md
     - Group Port: ports/group.md
