@@ -556,7 +556,7 @@ class WebhookJobHandler(JobHandler):
 
 ## Best Practices
 
-### 1. ✅ Keep Handlers Stateless
+### 1. Keep Handlers Stateless
 
 Handlers should not maintain state between job executions. All necessary data should come from the job payload.
 
@@ -582,7 +582,7 @@ class EmailHandler(JobHandler):
         return JobResult(success=True)
 ```
 
-### 2. ✅ Validate Payload Early
+### 2. Validate Payload Early
 
 Validate job payload at the start of `handle()` to catch errors before doing expensive work.
 
@@ -617,7 +617,7 @@ async def handle(self, job: Job) -> JobResult:
         raise ValidationError("user_id required")
 ```
 
-### 3. ✅ Use Structured Logging
+### 3. Use Structured Logging
 
 Log key events with structured context for observability.
 
@@ -659,7 +659,7 @@ async def handle(self, job: Job) -> JobResult:
     return JobResult(success=True)
 ```
 
-### 4. ✅ Return JobResult, Don't Raise Exceptions (Usually)
+### 4. Return JobResult, Don't Raise Exceptions (Usually)
 
 Return `JobResult` with `success=False` for expected failures. Only raise exceptions for unexpected errors.
 
@@ -704,7 +704,7 @@ async def handle(self, job: Job) -> JobResult:
         raise ValidationError("Insufficient balance")  # ❌ Will retry unnecessarily
 ```
 
-### 5. ✅ Use on_failure for Cleanup
+### 5. Use on_failure for Cleanup
 
 Use `on_failure` for cleanup, alerting, and dead letter processing, not for core business logic.
 
@@ -740,7 +740,7 @@ async def on_failure(self, job: Job, error: Exception) -> None:
     # Could refund the same payment multiple times
 ```
 
-### 6. ✅ Make Handlers Idempotent When Possible
+### 6. Make Handlers Idempotent When Possible
 
 Design handlers to safely retry without side effects.
 
@@ -775,7 +775,7 @@ async def handle(self, job: Job) -> JobResult:
     return JobResult(success=True)
 ```
 
-### 7. ✅ Use Dependency Injection
+### 7. Use Dependency Injection
 
 Inject dependencies through the constructor for testability.
 
