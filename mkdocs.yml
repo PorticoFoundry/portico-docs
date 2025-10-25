@@ -110,6 +110,7 @@ nav:
     - Embedding Port: ports/embedding.md
     - File Storage Port: ports/file_storage.md
     - Group Port: ports/group.md
+    - Job Handler Port: ports/job_handler.md
     - LLM Port: ports/llm.md
     - Permissions Port: ports/permissions.md
     - Template Port: ports/template.md
