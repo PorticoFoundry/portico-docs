@@ -113,6 +113,7 @@ nav:
     - Job Creator Port: ports/job_creator.md
     - Job Handler Port: ports/job_handler.md
     - Job Queue Port: ports/job_queue.md
+    - Job Trigger Port: ports/job_trigger.md
     - LLM Port: ports/llm.md
     - Managed RAG Port: ports/managed_rag.md
     - Notification Port: ports/notification.md
