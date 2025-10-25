@@ -589,7 +589,7 @@ await db_trigger.start()
 
 ## Best Practices
 
-### 1. ✅ Depend on JobCreator Port, Not JobService
+### 1. Depend on JobCreator Port, Not JobService
 
 Triggers should depend on the JobCreator interface for testability and flexibility.
 
@@ -614,7 +614,7 @@ class WebhookTrigger(JobTrigger):
         job = await self.job_service.create_job(...)  # Tight coupling
 ```
 
-### 2. ✅ Implement Graceful Shutdown
+### 2. Implement Graceful Shutdown
 
 Properly cleanup resources in stop() method.
 
@@ -640,7 +640,7 @@ class ScheduleTrigger(JobTrigger):
         self._running = False  # ❌ No cleanup
 ```
 
-### 3. ✅ Prevent Duplicate Starts
+### 3. Prevent Duplicate Starts
 
 Check if already running before starting.
 
@@ -662,7 +662,7 @@ async def start(self) -> None:
     self._scheduler.start()
 ```
 
-### 4. ✅ Handle Errors in Event Processing
+### 4. Handle Errors in Event Processing
 
 Catch and log errors when creating jobs from events.
 
@@ -696,7 +696,7 @@ async def _on_webhook_request(self, request):
     return {"job_id": str(job.id)}
 ```
 
-### 5. ✅ Use Structured Logging
+### 5. Use Structured Logging
 
 Log trigger lifecycle and job creation events with context.
 
@@ -738,7 +738,7 @@ async def start(self) -> None:
     self._running = True
 ```
 
-### 6. ✅ Validate Input from External Sources
+### 6. Validate Input from External Sources
 
 Validate data from webhooks, messages, files before creating jobs.
 
@@ -775,7 +775,7 @@ async def _on_webhook_request(self, request):
     )
 ```
 
-### 7. ✅ Use Dependency Injection for Testing
+### 7. Use Dependency Injection for Testing
 
 Accept JobCreator in constructor for easy testing.
 

@@ -699,7 +699,7 @@ async def monitor_queues(job_queue: JobQueueAdapter):
 
 ## Best Practices
 
-### 1. ✅ Implement Atomic Dequeue Operations
+### 1. Implement Atomic Dequeue Operations
 
 Ensure dequeue operations are atomic to prevent duplicate processing.
 
@@ -741,7 +741,7 @@ async def dequeue(self, queue_name: str, timeout: int = 30) -> Job | None:
         return job
 ```
 
-### 2. ✅ Respect Priority Ordering
+### 2. Respect Priority Ordering
 
 Always dequeue jobs in priority order (higher priority first).
 
@@ -773,7 +773,7 @@ async def dequeue(self, queue_name: str, timeout: int = 30) -> Job | None:
         return queue.pop(0)  # ❌ Ignores priority
 ```
 
-### 3. ✅ Handle Scheduled Jobs Correctly
+### 3. Handle Scheduled Jobs Correctly
 
 Don't dequeue jobs before their scheduled time.
 
@@ -796,7 +796,7 @@ async def dequeue(self, queue_name: str, timeout: int = 30) -> Job | None:
         return queue.pop(0)  # ❌ Might return scheduled job
 ```
 
-### 4. ✅ Implement Proper Retry Logic
+### 4. Implement Proper Retry Logic
 
 Move jobs to dead letter queue after max retries.
 
@@ -840,7 +840,7 @@ async def reject(self, job_id: UUID, requeue: bool = True, error_message: str | 
         await self.enqueue(job)  # ❌ Infinite retries
 ```
 
-### 5. ✅ Use Timeout for Blocking Dequeue
+### 5. Use Timeout for Blocking Dequeue
 
 Support timeout to prevent workers from blocking indefinitely.
 
@@ -875,7 +875,7 @@ async def dequeue(self, queue_name: str, timeout: int = 30) -> Job | None:
         await asyncio.sleep(0.1)
 ```
 
-### 6. ✅ Track Job Timestamps
+### 6. Track Job Timestamps
 
 Update timestamps for observability and debugging.
 
@@ -918,7 +918,7 @@ async def acknowledge(self, job_id: UUID) -> None:
     await self._update_status(job_id, JobStatus.COMPLETED)  # ❌ No timestamp
 ```
 
-### 7. ✅ Cleanup Resources Properly
+### 7. Cleanup Resources Properly
 
 Implement initialize() and close() for resource management.
 
