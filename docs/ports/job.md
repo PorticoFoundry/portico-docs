@@ -530,7 +530,7 @@ async def monitor_queue_health(stats: QueueStats) -> None:
 
 ## Best Practices
 
-### 1. ✅ Keep Payloads JSON-Serializable
+### 1. Keep Payloads JSON-Serializable
 
 Job payloads must be serializable for storage in queues.
 
@@ -571,7 +571,7 @@ job = Job(
 json.dumps(job.payload)  # ❌ TypeError
 ```
 
-### 2. ✅ Use Descriptive Job Types
+### 2. Use Descriptive Job Types
 
 Use hierarchical, descriptive job type names for clarity and routing.
 
@@ -607,7 +607,7 @@ job = Job(
 )
 ```
 
-### 3. ✅ Set Appropriate Max Retries
+### 3. Set Appropriate Max Retries
 
 Configure retries based on job characteristics.
 
@@ -650,7 +650,7 @@ job = Job(
 )
 ```
 
-### 4. ✅ Use Priority for Urgency, Not Importance
+### 4. Use Priority for Urgency, Not Importance
 
 Priority should reflect how quickly a job needs to run, not its business importance.
 
@@ -685,7 +685,7 @@ payment_job = Job(
 )
 ```
 
-### 5. ✅ Leverage Metadata for Context
+### 5. Leverage Metadata for Context
 
 Use metadata for extensibility without cluttering payload.
 
@@ -733,7 +733,7 @@ job = Job(
 )
 ```
 
-### 6. ✅ Use Scheduled Jobs for Delays
+### 6. Use Scheduled Jobs for Delays
 
 Use `scheduled_at` for delayed execution instead of manual delays.
 
@@ -766,7 +766,7 @@ async def handle(self, job: Job):
     await self.do_work()
 ```
 
-### 7. ✅ Track Job Ownership for Audit Trails
+### 7. Track Job Ownership for Audit Trails
 
 Use `created_by` to track who created jobs.
 
