@@ -111,6 +111,7 @@ nav:
     - File Storage Port: ports/file_storage.md
     - Group Port: ports/group.md
     - Job Creator Port: ports/job_creator.md
+    - Job Handler Port: ports/job_handler.md
     - Job Queue Port: ports/job_queue.md
     - LLM Port: ports/llm.md
     - Managed RAG Port: ports/managed_rag.md
