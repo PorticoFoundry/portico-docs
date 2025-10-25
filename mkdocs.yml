@@ -112,6 +112,7 @@ nav:
     - Group Port: ports/group.md
     - LLM Port: ports/llm.md
     - Managed RAG Port: ports/managed_rag.md
+    - Notification Port: ports/notification.md
     - Permissions Port: ports/permissions.md
     - Template Port: ports/template.md
     - User Port: ports/user.md
