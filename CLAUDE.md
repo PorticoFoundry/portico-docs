@@ -27,6 +27,40 @@ Emojis are acceptable in:
 
 **Rationale**: Markdown titles/headers should be clean and professional. Emojis can cause rendering issues, accessibility problems, and make the documentation less searchable and parseable.
 
+### Markdown Formatting Rules
+
+**ALWAYS add a blank line before lists**. Markdown requires a blank line before bullet lists and numbered lists to render them properly.
+
+```markdown
+❌ BAD - No blank line before list:
+We welcome suggestions for:
+- New demo applications
+- Improvements to existing demos
+
+✅ GOOD - Blank line before list:
+We welcome suggestions for:
+
+- New demo applications
+- Improvements to existing demos
+```
+
+**ALWAYS add a blank line before nested lists**.
+
+```markdown
+❌ BAD - No blank line before nested list:
+2. Create a new issue with:
+   - Demo name
+   - Steps to reproduce
+
+✅ GOOD - Blank line before nested list:
+2. Create a new issue with:
+
+   - Demo name
+   - Steps to reproduce
+```
+
+**Rationale**: Without the blank line, MkDocs will render the list items as regular paragraph text instead of formatted bullet points. This is a common Markdown parser behavior that affects readability.
+
 ### Documentation Structure
 
 Each port documentation file should follow this template:
@@ -77,6 +111,7 @@ Always run these checks before committing documentation changes:
 3. **Verify navigation**: Ensure new pages are added to `mkdocs.yml` in alphabetical order
 4. **Check links**: Verify all internal links work correctly
 5. **No emojis in titles**: Grep for emojis in headers: `grep -rn "^###.*✅" docs/` should return nothing
+6. **Lists have blank lines**: Verify all lists have a blank line before them (prevents rendering as text)
 
 ### File Organization
 
