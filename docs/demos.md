@@ -43,6 +43,7 @@ The organization webapp demonstrates the repository pattern with complete separa
 - Password: `Demopassword123!`
 
 **What to Try:**
+
 - Navigate the organizational hierarchy (Company → Division → Team)
 - Create a new team or project
 - Upload files and see access control in action
@@ -94,6 +95,7 @@ The Twitter demo showcases cache-aside pattern with tag-based invalidation. When
 - `frank@example.com` - Musician
 
 **What to Try:**
+
 - Post tweets and see real-time feed updates
 - Follow/unfollow users and observe cache invalidation
 - Check `/cache/metrics` to see cache performance statistics
@@ -140,6 +142,7 @@ The LLM Lab demonstrates repository pattern without a dedicated kit layer. Templ
 **Demo URL:** [https://lab.demos.portico.build](https://lab.demos.portico.build)
 
 **What to Try:**
+
 - Create a template with Jinja2 variables: `Hello {{name}}, welcome to {{company}}!`
 - Edit the template and observe automatic version creation
 - View version history and restore an old version
@@ -191,68 +194,13 @@ TaskFlow demonstrates a clean separation between domain models and database mode
 - Password: `Demo123!`
 
 **What to Try:**
+
 - Create a new project and add tasks
 - Move tasks through the Kanban workflow
 - Set different priority levels and observe visual indicators
 - View the dashboard to see project statistics
 - Complete tasks and see automatic timestamp updates
 - Create tasks with dependencies and relationships (coming in Phase 2)
-
----
-
-## Running Demos Locally
-
-All demo applications are available in the [portico-examples](https://github.com/PorticoFoundry/portico-examples) repository. Each demo can be run locally for development and testing.
-
-### Quick Start
-
-```bash
-# Clone the examples repository
-git clone https://github.com/PorticoFoundry/portico-examples.git
-cd portico-examples
-
-# Initialize submodules (each example has portico as a submodule)
-make init-submodules
-
-# Run a specific demo
-cd examples/twitter_webapp
-poetry install
-poetry run python seed_data.py  # Load demo data
-poetry run python main.py       # Start the app
-
-# Open browser to http://localhost:8003
-```
-
-### Available Demos
-
-- **Organization Webapp** - Port 8004, SQLite database
-- **Twitter Clone** - Port 8003, SQLite + Redis
-- **LLM Lab** - Port 8007, PostgreSQL + GCS + Graphlit
-- **TaskFlow** - Port 8007, PostgreSQL + APScheduler
-
-Each demo includes:
-
-- Complete source code
-- Database seeding scripts
-- Integration tests
-- Deployment configuration (Dockerfile, Cloud Run setup)
-- Development documentation in `CLAUDE.md`
-
----
-
-## Demo Infrastructure
-
-All demos are deployed on Google Cloud Run with production-grade infrastructure:
-
-- **Auto-scaling** - Scales from 0 to N instances based on traffic
-- **HTTPS/TLS** - Automatic SSL certificate provisioning and renewal
-- **PostgreSQL** - Cloud SQL with private VPC networking
-- **Redis** - Memorystore for cache backend
-- **File Storage** - Google Cloud Storage for uploads
-- **Monitoring** - Cloud Logging and Error Reporting
-- **CI/CD** - Automated builds via Cloud Build
-
-The infrastructure is defined as code using Terraform, available in the `portico-examples/terraform/` directory.
 
 ---
 
@@ -286,40 +234,3 @@ By exploring these demos, you'll see how Portico:
 - Audit logging for compliance
 
 ---
-
-## Contributing Demo Improvements
-
-Found a bug or want to suggest an enhancement? Each demo is maintained in the [portico-examples](https://github.com/PorticoFoundry/portico-examples) repository.
-
-### Reporting Issues
-
-1. Check if the issue already exists
-2. Create a new issue with:
-
-   - Demo name (Organization, Twitter, LLM Lab, or TaskFlow)
-   - Steps to reproduce
-   - Expected vs actual behavior
-   - Screenshots if applicable
-
-### Suggesting Features
-
-We welcome suggestions for:
-
-- New demo applications showcasing different Portico features
-- Improvements to existing demos
-- Additional use cases or scenarios
-
-Open an issue in the portico-examples repository with the `enhancement` label.
-
----
-
-## Next Steps
-
-After exploring the demos:
-
-1. **Read the Architecture Guide** - Understand [Portico's philosophy](philosophy.md) and hexagonal architecture
-2. **Explore Ports** - Learn about the [available ports](ports/index.md) and their interfaces
-3. **Study Kits** - See how [kits](kits/index.md) compose ports into features
-4. **Build Your Own** - Start with the [Portico documentation](index.md) to create your first application
-
-The demos are fully open-source and serve as reference implementations. Feel free to use them as starting points for your own applications.
