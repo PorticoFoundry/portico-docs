@@ -111,4 +111,4 @@ Portico makes this trade-off for you: we invest in the upfront structure so you 
 
 ---
 
-Ready to see this in action? Check out the [example applications](https://github.com/yourusername/portico-examples) or dive into the [documentation](index.md).
+Ready to see this in action? Check out the [demos](demos.md) or dive into the [documentation](index.md).

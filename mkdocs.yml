@@ -63,6 +63,10 @@ plugins:
             show_inheritance_diagram: false
 
 markdown_extensions:
+  # Table of contents
+  - toc:
+      toc_depth: 2
+
   # Admonitions (notes, warnings, etc.)
   - admonition
   - pymdownx.details
