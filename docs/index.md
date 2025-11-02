@@ -78,7 +78,7 @@ class OpenAIProvider(LLMProvider):
 
 **The magic:** Swap `OpenAIProvider` for `AnthropicProvider` and your entire app just works with a different AI provider. No changes to business logic needed.
 
-### 4. **Compose** - Wiring It All Together
+### 4. **[Compose](compose.md)** - Wiring It All Together
 
 The `compose` module is the only place in Portico that imports adapters. This is your "composition root" - where you decide which concrete implementations to use.
 
