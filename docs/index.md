@@ -38,7 +38,7 @@ class LLMKit:
         return await self.provider.complete(prompt)
 ```
 
-### 2. **Ports** - The Contracts
+### 2. **[Ports](ports/index.md)** - The Contracts
 
 Ports are interfaces (using Python's `ABC` or `Protocol`) that define *what* your application needs, without saying *how* it should work.
 
@@ -103,4 +103,4 @@ async def generate(request):
 
 ---
 
-Ready to dive in? Check out the [philosophy](philosophy.md) to understand the design principles, or explore the [example applications](https://github.com/yourusername/portico-examples) to see Portico in action.
+Ready to dive in? Check out the [philosophy](philosophy.md) to understand the design principles, or explore the [demos](demos.md) to see Portico in action.
