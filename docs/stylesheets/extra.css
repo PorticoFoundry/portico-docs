@@ -41,23 +41,23 @@
     max-width: 100%;
 }
 
-/* Navigation separators */
-/* Add separator after "Getting Started" (before Core) */
-.md-nav__item:has(.md-nav__link[title="Getting Started"]) {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-    padding-bottom: 0.6rem;
-    margin-bottom: 0.6rem;
+/* Top navigation tab separators */
+/* Add vertical separator after "Demos" tab (before Ports) */
+/* Using nth-child to target the 3rd tab (Demos) */
+.md-tabs__list .md-tabs__item:nth-child(3) {
+    position: relative;
+    padding-right: 1.2rem;
+    margin-right: 1.2rem;
 }
 
-/* Add separator after "Kits" (before Architecture) */
-.md-nav__item:has(.md-nav__link[title="Kits"]) {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
-    padding-bottom: 0.6rem;
-    margin-bottom: 0.6rem;
-}
-
-/* Dark mode separators */
-[data-md-color-scheme="slate"] .md-nav__item:has(.md-nav__link[title="Getting Started"]),
-[data-md-color-scheme="slate"] .md-nav__item:has(.md-nav__link[title="Kits"]) {
-    border-bottom-color: rgba(255, 255, 255, 0.12);
+.md-tabs__list .md-tabs__item:nth-child(3)::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 1.8em;
+    width: 1px;
+    background-color: currentColor;
+    opacity: 0.3;
 }
