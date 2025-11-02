@@ -131,3 +131,4 @@ nav:
     - Overview: kits/index.md
   - Adapters:
     - Overview: adapters/index.md
+  - Compose: compose.md
