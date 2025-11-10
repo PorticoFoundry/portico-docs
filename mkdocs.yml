@@ -129,6 +129,7 @@ nav:
     - Vector Store Port: ports/vector_store.md
   - Kits:
     - Overview: kits/index.md
+    - Hierarchy Kit: kits/hierarchy.md
   - Adapters:
     - Overview: adapters/index.md
   - Compose: compose.md

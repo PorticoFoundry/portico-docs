@@ -31,7 +31,7 @@ The Group Port defines the contract for managing groups, group memberships, and 
 
 ### Group
 
-Core domain model representing a group or organizational unit. Supports hierarchical structures through `parent_id`. Immutable snapshot of group state.
+Core domain model representing a group or organizational unit. Supports hierarchical structures through `parent_ids` with multi-parent support. Immutable snapshot of group state.
 
 | Field | Type | Required | Default | Description |
 |-------|------|----------|---------|-------------|
@@ -39,8 +39,9 @@ Core domain model representing a group or organizational unit. Supports hierarch
 | `name` | `str` | Yes | - | Group name (unique within type) |
 | `group_type` | `str` | Yes | `"organization"` | Type of group (organization, team, project, etc.) |
 | `description` | `Optional[str]` | No | `None` | Group description |
-| `parent_id` | `Optional[UUID]` | No | `None` | Parent group ID for hierarchies |
+| `parent_ids` | `List[UUID]` | Yes | `[]` | Parent group IDs (supports multiple parents) |
 | `is_active` | `bool` | Yes | `True` | Whether the group is active |
+| `permission_cascade_enabled` | `bool` | Yes | `True` | Whether permissions cascade through this group |
 | `metadata` | `Dict[str, str]` | Yes | `{}` | Custom metadata key-value pairs |
 | `created_at` | `datetime` | Yes | `now(UTC)` | Group creation timestamp (UTC) |
 | `updated_at` | `datetime` | Yes | `now(UTC)` | Last update timestamp (UTC) |
@@ -58,8 +59,9 @@ org = Group(
     name="Acme Corporation",
     group_type="organization",
     description="Root organization",
-    parent_id=None,  # No parent - this is the root
+    parent_ids=[],  # No parents - this is the root
     is_active=True,
+    permission_cascade_enabled=True,
     metadata={"industry": "technology", "region": "us-west"},
     created_at=datetime.now(UTC),
     updated_at=datetime.now(UTC)
@@ -71,9 +73,24 @@ team = Group(
     name="Engineering Team",
     group_type="team",
     description="Software engineering team",
-    parent_id=org.id,  # Belongs to organization
+    parent_ids=[org.id],  # Belongs to organization
     is_active=True,
+    permission_cascade_enabled=True,
     metadata={"department": "engineering"},
+    created_at=datetime.now(UTC),
+    updated_at=datetime.now(UTC)
+)
+
+# Cross-functional project with multiple parents (matrix organization)
+project = Group(
+    id=uuid4(),
+    name="Product Launch",
+    group_type="project",
+    description="Cross-functional product launch project",
+    parent_ids=[engineering_team.id, marketing_team.id],  # Multiple parents!
+    is_active=True,
+    permission_cascade_enabled=True,
+    metadata={"priority": "high"},
     created_at=datetime.now(UTC),
     updated_at=datetime.now(UTC)
 )
@@ -118,7 +135,8 @@ Request model for creating a new group.
 | `name` | `str` | Yes | - | Group name |
 | `group_type` | `str` | No | `"organization"` | Type of group |
 | `description` | `Optional[str]` | No | `None` | Group description |
-| `parent_id` | `Optional[UUID]` | No | `None` | Parent group for hierarchies |
+| `parent_ids` | `List[UUID]` | No | `[]` | Parent group IDs (supports multiple parents) |
+| `permission_cascade_enabled` | `bool` | No | `True` | Whether permissions cascade through this group |
 | `metadata` | `Dict[str, str]` | No | `{}` | Custom metadata |
 
 **Example**:
@@ -138,8 +156,17 @@ team_request = CreateGroupRequest(
     name="Engineering",
     group_type="team",
     description="Software engineering team",
-    parent_id=org.id,
+    parent_ids=[org.id],  # Single parent
     metadata={"department": "engineering"}
+)
+
+# Create cross-functional project with multiple parents
+project_request = CreateGroupRequest(
+    name="Product Launch",
+    group_type="project",
+    description="Cross-functional project",
+    parent_ids=[engineering.id, marketing.id],  # Multiple parents!
+    metadata={"priority": "high"}
 )
 ```
 
