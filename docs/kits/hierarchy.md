@@ -2,162 +2,142 @@
 
 ## Overview
 
-The Hierarchy Kit provides services for building and querying hierarchical group structures in Portico applications. It builds on the [Group Port](../ports/group.md) to offer tree-building, ancestor/descendant queries, and hierarchy traversal with multi-parent support.
+**Purpose**: Transform flat group data into hierarchical tree structures and query ancestor/descendant relationships for organizational charts, permission inheritance, and navigation.
 
-**Purpose**: Transform flat group data into hierarchical tree structures, query relationships between groups in a hierarchy, and support complex organizational charts with matrix structures.
-
-**Domain**: Organizational hierarchies, tree structures, ancestor/descendant relationships
-
-**Key Capabilities**:
+**Key Features**:
 
 - Build complete hierarchy trees from root groups
 - Query ancestors (parents, grandparents, etc.) of any group
 - Query descendants (children, grandchildren, etc.) of any group
-- Get subtrees starting from specific nodes
 - Support multi-parent groups (matrix organizations)
 - Configurable depth limits for large hierarchies
 - Cycle detection for multi-parent graphs
 
-**Kit Type**: Stateless (no database models, wraps GroupKit)
+**Dependencies**:
 
-**When to Use**:
+- **Injected services**: GroupService (for accessing group data)
+- **Port dependencies**: None (uses GroupService methods)
+- **Note**: Kits cannot directly import from other kits (enforced by import-linter contract #6). Dependencies are injected via constructor in `compose.py`.
 
-- Displaying organizational charts or team structures
-- Finding all parent organizations for permission inheritance
-- Showing all teams under a division
-- Building navigation trees for nested workspaces
-- Implementing cascading permissions down a hierarchy
-- Supporting matrix organizations with multi-parent groups
+## Quick Start
 
-## Dependencies
+```python
+from portico import compose
 
-The Hierarchy Kit depends on the [Group Kit](../ports/group.md) to access group data. When composing your application, ensure Group Kit is included before Hierarchy Kit:
+# Basic configuration
+app = compose.webapp(
+    database_url="postgresql://localhost/myapp",
+    kits=[
+        compose.group(),      # Required - provides group data
+        compose.hierarchy(),  # Uses GroupService
+    ]
+)
+
+# Access the hierarchy kit
+hierarchy_kit = app.kits["hierarchy"]
+hierarchy_service = hierarchy_kit.service
+
+# Build complete hierarchy
+roots = await hierarchy_service.build_hierarchy()
+
+# Get ancestors of a group
+ancestors = await hierarchy_service.get_ancestors(group_id)
+
+# Get descendants of a group
+descendants = await hierarchy_service.get_descendants(group_id)
+```
+
+## Core Concepts
+
+### Tree Building
+
+The Hierarchy Kit builds tree structures from flat group data by following parent-child relationships. Each node in the tree is represented as a `HierarchyNode` containing the group data plus its children.
+
+```python
+# Build entire hierarchy from all roots
+roots = await hierarchy_service.build_hierarchy()
+
+# Build from specific root
+division_id = UUID("...")
+roots = await hierarchy_service.build_hierarchy(root_ids=[division_id])
+
+# Limit depth for performance
+roots = await hierarchy_service.build_hierarchy(max_depth=2)
+```
+
+### Ancestor/Descendant Queries
+
+Efficiently query relationships in the hierarchy using breadth-first search:
+
+```python
+# Get all parent groups (walking up the hierarchy)
+ancestors = await hierarchy_service.get_ancestors(team_id)
+# Returns: [Division, Company]
+
+# Get all child groups (walking down the hierarchy)
+descendants = await hierarchy_service.get_descendants(division_id)
+# Returns: [Team1, Team2, Project1, Project2, ...]
+
+# Include the group itself in results
+ancestors = await hierarchy_service.get_ancestors(team_id, include_self=True)
+# Returns: [Team, Division, Company]
+```
+
+### Multi-Parent Support
+
+The Hierarchy Kit supports matrix organizations where groups can have multiple parents:
+
+```python
+# Create cross-functional project with multiple parents
+launch_project = await group_service.create_group(
+    CreateGroupRequest(
+        name="Product Launch 2024",
+        group_type="project",
+        parent_ids=[engineering.id, marketing.id]  # Multiple parents
+    )
+)
+
+# When building hierarchy, the project appears under both parents
+# When getting ancestors, both parents are returned
+```
+
+Multi-parent traversal uses BFS with cycle detection and deduplication to ensure each group appears once in results.
+
+## Configuration
+
+The Hierarchy Kit has no configuration options:
 
 ```python
 from portico import compose
 
 app = compose.webapp(
-    database_url="postgresql://localhost/myapp",
     kits=[
-        compose.group(),      # Required - provides group data
-        compose.hierarchy(),  # Uses GroupKit
+        compose.group(),
+        compose.hierarchy(),  # No configuration needed
     ]
 )
 ```
 
-## Service Methods
+## Usage Examples
 
-The `HierarchyService` provides methods for building and querying hierarchical structures.
-
-### build_hierarchy()
-
-Build complete hierarchy tree(s) from root groups.
+### Example 1: Displaying Organizational Chart
 
 ```python
-async def build_hierarchy(
-    self,
-    root_ids: Optional[List[UUID]] = None,
-    max_depth: Optional[int] = None
-) -> List[HierarchyNode]:
-    """Build complete hierarchy tree from root groups.
+@app.get("/org/chart")
+async def get_org_chart():
+    """Get complete organizational hierarchy."""
+    hierarchy_service = app.kits["hierarchy"].service
 
-    Args:
-        root_ids: Optional list of specific root group IDs to start from.
-                  If None, finds all groups without parents.
-        max_depth: Optional maximum depth to traverse. None means unlimited.
+    # Build full tree with depth limit
+    roots = await hierarchy_service.build_hierarchy(max_depth=3)
 
-    Returns:
-        List of HierarchyNode trees, one per root group.
-    """
+    # Return as JSON for frontend rendering
+    return {"hierarchy": [root.dict() for root in roots]}
 ```
 
-**Example - Build complete organization hierarchy:**
+### Example 2: Permission Inheritance Chain
 
 ```python
-from portico import compose
-
-app = compose.webapp(kits=[compose.group(), compose.hierarchy()])
-
-# Build entire hierarchy from all roots
-hierarchy_service = app.kits["hierarchy"].service
-roots = await hierarchy_service.build_hierarchy()
-
-# Roots is a list of HierarchyNode objects
-for root in roots:
-    print(f"Root: {root.name} ({root.group_type})")
-    print(f"  Children: {len(root.children)}")
-    print(f"  Depth: {root.depth}")
-```
-
-**Example - Build from specific root:**
-
-```python
-# Build hierarchy starting from a specific division
-division_id = UUID("...")
-roots = await hierarchy_service.build_hierarchy(root_ids=[division_id])
-
-# Returns hierarchy tree rooted at that division
-division_tree = roots[0]
-```
-
-**Example - Limit depth for performance:**
-
-```python
-# Build only 2 levels deep (root + immediate children)
-roots = await hierarchy_service.build_hierarchy(max_depth=2)
-
-# Useful for large organizations - prevents loading entire tree
-```
-
-### get_ancestors()
-
-Get all ancestor groups walking up the parent hierarchy.
-
-```python
-async def get_ancestors(
-    self,
-    group_id: UUID,
-    include_self: bool = False
-) -> List[Group]:
-    """Get all ancestors of a group (walking up parent hierarchy).
-
-    Uses breadth-first search to handle multi-parent groups.
-
-    Args:
-        group_id: Group to find ancestors for
-        include_self: Whether to include the group itself in results
-
-    Returns:
-        List of ancestor Group objects (parents, grandparents, etc.)
-        Ordered by distance: immediate parents first, then grandparents, etc.
-    """
-```
-
-**Example - Find all parent organizations:**
-
-```python
-# Get all ancestors of a team
-team_id = UUID("...")
-ancestors = await hierarchy_service.get_ancestors(team_id)
-
-# ancestors might be: [Division, Company]
-for ancestor in ancestors:
-    print(f"Parent: {ancestor.name} ({ancestor.group_type})")
-```
-
-**Example - Include group itself:**
-
-```python
-# Get group + all ancestors
-ancestors = await hierarchy_service.get_ancestors(team_id, include_self=True)
-
-# ancestors might be: [Team, Division, Company]
-```
-
-**Example - Check permission inheritance:**
-
-```python
-# Find all groups where permissions might be inherited from
 async def get_permission_chain(group_id: UUID) -> List[Group]:
     """Get groups to check for cascading permissions."""
     hierarchy_service = app.kits["hierarchy"].service
@@ -167,107 +147,32 @@ async def get_permission_chain(group_id: UUID) -> List[Group]:
         group_id,
         include_self=True
     )
+
+# Usage with RBAC
+groups_to_check = await get_permission_chain(team_id)
+for group in groups_to_check:
+    if await rbac_service.check_permission(user_id, "documents.read", group.id):
+        return True
 ```
 
-### get_descendants()
-
-Get all descendant groups walking down the child hierarchy.
+### Example 3: Breadcrumb Navigation
 
 ```python
-async def get_descendants(
-    self,
-    group_id: UUID,
-    include_self: bool = False
-) -> List[Group]:
-    """Get all descendants of a group (walking down child hierarchy).
-
-    Uses breadth-first search.
-
-    Args:
-        group_id: Group to find descendants for
-        include_self: Whether to include the group itself in results
-
-    Returns:
-        List of descendant Group objects (children, grandchildren, etc.)
-        Ordered by distance: immediate children first, then grandchildren, etc.
-    """
-```
-
-**Example - Find all teams under a division:**
-
-```python
-# Get all descendants of a division
-division_id = UUID("...")
-descendants = await hierarchy_service.get_descendants(division_id)
-
-# descendants might include all teams, projects, sub-groups
-for descendant in descendants:
-    print(f"Child: {descendant.name} ({descendant.group_type})")
-```
-
-**Example - Count total groups in subtree:**
-
-```python
-# Get count of all groups under a division
-division_id = UUID("...")
-descendants = await hierarchy_service.get_descendants(
-    division_id,
-    include_self=True
-)
-
-print(f"Total groups in division: {len(descendants)}")
-```
-
-### get_subtree()
-
-Get a subtree rooted at a specific group, returned as a HierarchyNode tree.
-
-```python
-async def get_subtree(
-    self,
-    root_id: UUID,
-    max_depth: Optional[int] = None
-) -> HierarchyNode:
-    """Get a subtree starting from a specific group.
-
-    Args:
-        root_id: Group ID to use as root of subtree
-        max_depth: Optional maximum depth to traverse
-
-    Returns:
-        HierarchyNode tree rooted at the specified group
-
-    Raises:
-        ResourceNotFoundError: If group not found
-    """
-```
-
-**Example - Get division subtree:**
-
-```python
-# Get tree view of a division and its teams
-division_id = UUID("...")
-subtree = await hierarchy_service.get_subtree(division_id)
-
-print(f"Division: {subtree.name}")
-for team in subtree.children:
-    print(f"  Team: {team.name}")
-    for project in team.children:
-        print(f"    Project: {project.name}")
-```
-
-**Example - Render org chart for a specific division:**
-
-```python
-async def render_division_chart(division_id: UUID, max_levels: int = 3):
-    """Render organizational chart for a division."""
+@app.get("/groups/{group_id}/breadcrumbs")
+async def get_breadcrumbs(group_id: UUID):
+    """Get breadcrumb navigation for a group."""
     hierarchy_service = app.kits["hierarchy"].service
 
-    # Get subtree with depth limit
-    subtree = await hierarchy_service.get_subtree(division_id, max_depth=max_levels)
+    # Get path from root to this group
+    ancestors = await hierarchy_service.get_ancestors(group_id, include_self=True)
+    ancestors.reverse()  # Root → group order
 
-    # Render as HTML/JSON for frontend
-    return subtree.dict()
+    return {
+        "breadcrumbs": [
+            {"id": str(g.id), "name": g.name, "type": g.group_type}
+            for g in ancestors
+        ]
+    }
 ```
 
 ## Domain Models
@@ -290,16 +195,8 @@ Represents a node in a hierarchy tree with children.
 **Example:**
 
 ```python
-from portico.kits.hierarchy import HierarchyNode
-
 # Build hierarchy returns trees of HierarchyNode objects
 roots = await hierarchy_service.build_hierarchy()
-
-root = roots[0]
-print(f"Root: {root.name}")
-print(f"Type: {root.group_type}")
-print(f"Children: {len(root.children)}")
-print(f"Depth: {root.depth}")
 
 # Recursively traverse tree
 def print_tree(node: HierarchyNode, indent: int = 0):
@@ -307,378 +204,210 @@ def print_tree(node: HierarchyNode, indent: int = 0):
     for child in node.children:
         print_tree(child, indent + 1)
 
-print_tree(root)
+print_tree(roots[0])
 ```
 
-## Configuration
+## Best Practices
 
-The Hierarchy Kit has minimal configuration:
+### 1. Use Depth Limits for Large Hierarchies
+
+For organizations with hundreds of groups, always use depth limits to prevent loading entire trees:
 
 ```python
-from dataclasses import dataclass
+# ✅ GOOD - Limit depth for performance
+roots = await hierarchy_service.build_hierarchy(max_depth=3)
+subtree = await hierarchy_service.get_subtree(division_id, max_depth=2)
 
-@dataclass
-class HierarchyKitConfig:
-    """Configuration for Hierarchy Kit."""
-    # Currently no configuration options
-    # Reserved for future features (caching, performance tuning)
+# ❌ BAD - Loading entire hierarchy without limits
+roots = await hierarchy_service.build_hierarchy()  # Could load 1000+ groups
 ```
 
-Currently, the Hierarchy Kit has no configuration options but the config class is available for future extensibility.
+### 2. Load Subtrees Instead of Full Hierarchy
 
-## Multi-Parent Support
-
-The Hierarchy Kit fully supports multi-parent groups, enabling matrix organizational structures.
-
-### What are Multi-Parent Groups?
-
-Multi-parent groups can belong to multiple parent groups simultaneously. This is common in matrix organizations where employees report to multiple managers, or projects span multiple departments.
-
-**Example: Cross-functional project team:**
+When displaying a specific section of the org chart, load only the needed subtree:
 
 ```python
-from portico.kits.group.models import CreateGroupRequest
+# ✅ GOOD - Load only relevant subtree
+subtree = await hierarchy_service.get_subtree(division_id)
 
-group_service = app.kits["group"].service
-
-# Create company
-company = await group_service.create_group(
-    CreateGroupRequest(name="TechCorp", group_type="company")
-)
-
-# Create divisions
-engineering = await group_service.create_group(
-    CreateGroupRequest(
-        name="Engineering",
-        group_type="division",
-        parent_ids=[company.id]
-    )
-)
-
-marketing = await group_service.create_group(
-    CreateGroupRequest(
-        name="Marketing",
-        group_type="division",
-        parent_ids=[company.id]
-    )
-)
-
-# Cross-functional project with multiple parents
-launch_project = await group_service.create_group(
-    CreateGroupRequest(
-        name="Product Launch 2024",
-        group_type="project",
-        parent_ids=[engineering.id, marketing.id]  # Multiple parents!
-    )
-)
+# ❌ BAD - Load full hierarchy and filter client-side
+roots = await hierarchy_service.build_hierarchy()
+# Then search for division node...
 ```
 
-### How Multi-Parent Traversal Works
+### 3. Cache Hierarchy Results
 
-When traversing hierarchies with multi-parent groups:
-
-- **Breadth-first search (BFS)** ensures closest ancestors/descendants are returned first
-- **Cycle detection** prevents infinite loops
-- **Deduplication** ensures each group appears once in results
-- **Tree building** shows multi-parent groups under each parent
-
-**Example hierarchy with multi-parent:**
-
-```
-Company
-├── Engineering
-│   └── Product Launch (multi-parent)
-└── Marketing
-    └── Product Launch (same group!)
-```
-
-When you call `build_hierarchy()`, the Product Launch project appears under both Engineering and Marketing. When you call `get_ancestors(launch_project.id)`, you get both Engineering and Marketing, plus Company.
-
-## Use Cases
-
-### Use Case 1: Displaying Organizational Chart
+Hierarchy queries can be expensive for large organizations. Cache results in your application:
 
 ```python
+# ✅ GOOD - Cache hierarchy results
+from functools import lru_cache
+
+@lru_cache(maxsize=100)
+async def get_cached_hierarchy(root_id: str):
+    return await hierarchy_service.get_subtree(UUID(root_id))
+
+# ❌ BAD - Rebuild hierarchy on every request
 @app.get("/org/chart")
 async def get_org_chart():
-    """Get complete organizational hierarchy."""
-    hierarchy_service = app.kits["hierarchy"].service
-
-    # Build full tree
-    roots = await hierarchy_service.build_hierarchy()
-
-    # Return as JSON for frontend rendering
-    return {"hierarchy": [root.dict() for root in roots]}
+    roots = await hierarchy_service.build_hierarchy()  # Expensive!
+    return {"hierarchy": [r.dict() for r in roots]}
 ```
 
-### Use Case 2: Permission Inheritance
+### 4. Use Cascading Permissions Instead of Manual Traversal
+
+For permission checks, use RBAC's cascading permissions instead of manually walking the hierarchy:
 
 ```python
-async def check_inherited_permission(
-    user_id: UUID,
-    permission: str,
-    group_id: UUID
-) -> bool:
-    """Check if user has permission in group or any ancestor."""
-    rbac_service = app.kits["rbac"].service
-    hierarchy_service = app.kits["hierarchy"].service
+# ✅ GOOD - Let RBAC handle cascading
+can_read = await rbac_service.check_permission(
+    user_id,
+    "documents.read",
+    team_id  # Automatically checks ancestors
+)
 
-    # Check group + all ancestors
-    groups_to_check = await hierarchy_service.get_ancestors(
-        group_id,
-        include_self=True
-    )
-
-    for group in groups_to_check:
-        if await rbac_service.check_permission(user_id, permission, group.id):
-            return True
-
-    return False
+# ❌ BAD - Manually walk hierarchy for permissions
+groups = await hierarchy_service.get_ancestors(team_id, include_self=True)
+for group in groups:
+    if await rbac_service.check_permission(user_id, "documents.read", group.id):
+        return True
 ```
 
-**Note:** With Portico's cascading permissions system (see [Cascading Permissions](#cascading-permissions)), you don't need to manually walk the hierarchy - the RBAC service does it automatically when permissions have `cascades=True`.
+### 5. Include Self When Building Permission Chains
 
-### Use Case 3: Finding All Teams Under a Division
+When checking permissions, always include the group itself in the ancestor list:
 
 ```python
-@app.get("/divisions/{division_id}/teams")
-async def get_division_teams(division_id: UUID):
-    """Get all teams under a division."""
-    hierarchy_service = app.kits["hierarchy"].service
+# ✅ GOOD - Include group in permission chain
+groups = await hierarchy_service.get_ancestors(group_id, include_self=True)
 
-    # Get all descendants
-    descendants = await hierarchy_service.get_descendants(division_id)
-
-    # Filter to only teams
-    teams = [g for g in descendants if g.group_type == "team"]
-
-    return {"teams": teams}
+# ❌ BAD - Missing direct group permissions
+groups = await hierarchy_service.get_ancestors(group_id)  # Skips group itself
 ```
 
-### Use Case 4: Breadcrumb Navigation
+### 6. Handle Multi-Parent Groups Carefully
+
+When working with multi-parent groups, remember that ancestors/descendants may contain duplicates from different paths:
 
 ```python
-@app.get("/groups/{group_id}/breadcrumbs")
-async def get_breadcrumbs(group_id: UUID):
-    """Get breadcrumb navigation for a group."""
-    hierarchy_service = app.kits["hierarchy"].service
-    group_service = app.kits["group"].service
+# ✅ GOOD - BFS ensures closest ancestors first, no duplicates
+ancestors = await hierarchy_service.get_ancestors(multi_parent_group_id)
+# Returns each unique ancestor once, ordered by distance
 
-    # Get path from root to this group
-    ancestors = await hierarchy_service.get_ancestors(group_id, include_self=True)
-
-    # Reverse to get root → group order
-    ancestors.reverse()
-
-    # Format as breadcrumbs
-    breadcrumbs = [
-        {"id": str(g.id), "name": g.name, "type": g.group_type}
-        for g in ancestors
-    ]
-
-    return {"breadcrumbs": breadcrumbs}
+# ❌ BAD - Assuming single-parent structure
+parent_id = group.parent_ids[0]  # Breaks for multi-parent groups!
 ```
 
-## Cascading Permissions
+### 7. Use get_subtree for Tree Rendering
 
-The Hierarchy Kit works seamlessly with Portico's RBAC cascading permissions system. When permissions have `cascades=True`, they automatically flow down the hierarchy without manual traversal.
+When rendering hierarchical UIs, use `get_subtree()` to get pre-built tree structures:
 
-### How Cascading Works
+```python
+# ✅ GOOD - Get tree structure ready for rendering
+subtree = await hierarchy_service.get_subtree(division_id)
+return subtree.dict()  # Frontend can render directly
 
-1. **Permission Level**: Set `cascades=True` when creating permissions
-2. **Group Level**: Groups have `permission_cascade_enabled=True` by default
-3. **Automatic Inheritance**: RBAC service walks hierarchy automatically
+# ❌ BAD - Get descendants and rebuild tree manually
+descendants = await hierarchy_service.get_descendants(division_id)
+# Then manually reconstruct tree structure...
+```
 
-**Example:**
+## Integration with RBAC
+
+### Cascading Permissions
+
+The Hierarchy Kit works seamlessly with RBAC's cascading permissions. When permissions have `cascades=True`, they automatically flow down the hierarchy:
 
 ```python
 from portico.kits.rbac.models import CreatePermissionRequest
 
 rbac_service = app.kits["rbac"].service
 
-# Create permission that cascades down hierarchy
+# Create cascading permission
 await rbac_service.create_permission(
     CreatePermissionRequest(
         name="documents.read",
-        description="Read documents",
         cascades=True  # Flows down hierarchy
     )
 )
 
-# Assign permission at company level
+# Assign at company level
 await rbac_service.assign_group_role(
     user_id=ceo_user_id,
     group_id=company_id,
     role_id=admin_role_id
 )
 
-# CEO automatically has documents.read in all child groups
+# CEO automatically has permission in all child groups
 can_read = await rbac_service.check_permission(
     ceo_user_id,
     "documents.read",
-    team_id  # Deep in hierarchy - still returns True!
+    team_id  # Deep in hierarchy - returns True!
 )
 ```
 
 The RBAC service internally uses `HierarchyService.get_ancestors()` to walk up the hierarchy when checking cascading permissions.
 
-### When to Use Manual Hierarchy Traversal
+### When to Use Manual Traversal
 
-Use manual `get_ancestors()` / `get_descendants()` calls when:
+Use manual `get_ancestors()` / `get_descendants()` calls for:
 
-- **Building UIs** that display hierarchy structures
-- **Custom business logic** that needs to inspect the hierarchy
-- **Non-permission queries** like finding all teams under a division
-- **Breadcrumbs** and navigation trees
+- Building UIs that display hierarchy structures
+- Custom business logic that needs to inspect the hierarchy
+- Non-permission queries (e.g., finding all teams under a division)
+- Breadcrumbs and navigation trees
 
-Use cascading permissions when:
+Use cascading permissions for:
 
-- **Checking permissions** - Let RBAC service handle it
-- **Access control** - Simpler and more maintainable
-- **Standard inheritance patterns** - Less code to maintain
+- Checking permissions (let RBAC handle it)
+- Access control (simpler and more maintainable)
+- Standard inheritance patterns
 
-## Performance Considerations
+## FAQs
 
-### Large Hierarchies
+### Q: What's the difference between get_descendants and get_subtree?
 
-For organizations with hundreds or thousands of groups:
-
-1. **Use depth limits** when building trees:
-   ```python
-   # Only load 3 levels
-   roots = await hierarchy_service.build_hierarchy(max_depth=3)
-   ```
-
-2. **Load subtrees** instead of full hierarchy:
-   ```python
-   # Only load division and below
-   subtree = await hierarchy_service.get_subtree(division_id)
-   ```
-
-3. **Cache results** in your application:
-   ```python
-   from functools import lru_cache
-
-   @lru_cache(maxsize=100)
-   async def get_cached_hierarchy(root_id: str):
-       return await hierarchy_service.get_subtree(UUID(root_id))
-   ```
-
-### Multi-Parent Groups
-
-Multi-parent groups increase traversal complexity:
-
-- BFS ensures efficient traversal
-- Cycle detection prevents infinite loops
-- Each group still visited once (deduplication)
-
-For very large multi-parent graphs, consider:
-- Limiting depth
-- Loading on-demand (lazy loading)
-- Caching subtrees at application level
-
-## Testing
-
-The Hierarchy Kit is easy to test since it depends on the Group Kit:
+A: `get_descendants()` returns a flat list of all child groups (children, grandchildren, etc.) ordered by distance. `get_subtree()` returns a tree structure (`HierarchyNode`) with nested children, ready for rendering hierarchical UIs.
 
 ```python
-import pytest
-from portico import compose
-from portico.kits.group.models import CreateGroupRequest
+# Flat list of all descendants
+descendants = await hierarchy_service.get_descendants(division_id)
+# Returns: [Team1, Team2, Project1, Project2]
 
-@pytest.mark.asyncio
-async def test_build_simple_hierarchy():
-    """Test building a 3-level hierarchy."""
-    app = compose.webapp(
-        database_url="sqlite+aiosqlite:///:memory:",
-        kits=[compose.group(), compose.hierarchy()]
-    )
-
-    group_service = app.kits["group"].service
-    hierarchy_service = app.kits["hierarchy"].service
-
-    # Create hierarchy: company > division > team
-    company = await group_service.create_group(
-        CreateGroupRequest(name="ACME Corp", group_type="company")
-    )
-    division = await group_service.create_group(
-        CreateGroupRequest(
-            name="Engineering",
-            group_type="division",
-            parent_ids=[company.id]
-        )
-    )
-    team = await group_service.create_group(
-        CreateGroupRequest(
-            name="Backend",
-            group_type="team",
-            parent_ids=[division.id]
-        )
-    )
-
-    # Build hierarchy
-    roots = await hierarchy_service.build_hierarchy()
-
-    # Verify structure
-    assert len(roots) == 1
-    assert roots[0].id == company.id
-    assert len(roots[0].children) == 1
-    assert roots[0].children[0].id == division.id
-    assert len(roots[0].children[0].children) == 1
-    assert roots[0].children[0].children[0].id == team.id
+# Tree structure
+subtree = await hierarchy_service.get_subtree(division_id)
+# Returns: HierarchyNode with nested children property
 ```
 
-## Integration with Other Kits
+### Q: How do I handle multi-parent groups?
 
-### RBAC Kit
+A: The Hierarchy Kit fully supports multi-parent groups using breadth-first search with cycle detection. Each group appears once in results, ordered by distance from the starting point. When building trees, multi-parent groups appear under each parent.
 
-Hierarchy Kit + RBAC Kit enable cascading permissions:
+### Q: What happens if there's a cycle in the hierarchy?
+
+A: The Hierarchy Kit detects cycles during traversal and prevents infinite loops. Each group is visited only once, even if it appears multiple times in different paths.
+
+### Q: How do I improve performance for large hierarchies?
+
+A: Use depth limits (`max_depth`) when building trees, load subtrees instead of full hierarchies, and cache results in your application. For very large organizations (1000+ groups), consider lazy loading and pagination.
+
+### Q: Can I customize how the tree is built?
+
+A: The Hierarchy Kit uses a fixed BFS algorithm for consistency and correctness. For custom tree structures, use `get_descendants()` to get all groups and build your own tree structure.
+
+### Q: Do I need to manually walk the hierarchy for permission checks?
+
+A: No! Use RBAC's cascading permissions instead. When a permission has `cascades=True`, the RBAC service automatically checks ancestors. Manual traversal is only needed for non-permission use cases like building UIs.
+
+### Q: How do I find the root groups in my hierarchy?
+
+A: Call `build_hierarchy()` without parameters - it automatically finds all groups without parents and uses them as roots:
 
 ```python
-app = compose.webapp(
-    kits=[
-        compose.user(),
-        compose.group(),
-        compose.hierarchy(),  # Provides hierarchy traversal
-        compose.rbac(group_kit=group_kit),  # Uses hierarchy for cascading
-    ]
-)
+roots = await hierarchy_service.build_hierarchy()
+# Returns HierarchyNode objects for each root group
 ```
 
-RBAC service automatically uses HierarchyService for permission inheritance when checking cascading permissions.
+### Q: What's the order of results from get_ancestors and get_descendants?
 
-### Group Kit
-
-Hierarchy Kit depends on Group Kit for group data:
-
-```python
-# Group Kit manages CRUD
-group_service = app.kits["group"].service
-new_group = await group_service.create_group(...)
-
-# Hierarchy Kit queries relationships
-hierarchy_service = app.kits["hierarchy"].service
-ancestors = await hierarchy_service.get_ancestors(new_group.id)
-```
-
-## Summary
-
-The Hierarchy Kit provides:
-
-- **Tree building** from flat group data
-- **Ancestor/descendant queries** for relationship traversal
-- **Multi-parent support** for matrix organizations
-- **Integration with RBAC** for cascading permissions
-- **Performance controls** via depth limits and subtrees
-
-Use Hierarchy Kit when you need to:
-- Display organizational charts
-- Implement permission inheritance
-- Build navigation trees
-- Query group relationships
-- Support complex organizational structures
-
-Next steps:
-- [Group Port](../ports/group.md) - Understand group data model
-- [Compose](../compose.md) - Learn how to wire kits together
-- [Philosophy](../philosophy.md) - Understand hexagonal architecture
+A: Both methods return results ordered by distance from the starting group. `get_ancestors()` returns immediate parents first, then grandparents, etc. `get_descendants()` returns immediate children first, then grandchildren, etc.

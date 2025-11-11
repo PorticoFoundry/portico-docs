@@ -21,6 +21,7 @@ This repository contains the MkDocs documentation site for the Portico framework
 ```
 
 Emojis are acceptable in:
+
 - Code comments within code blocks (e.g., `# ✅ GOOD - Handler is stateless`)
 - Regular paragraph text (if contextually appropriate)
 - Example outputs or demonstrations
@@ -104,14 +105,38 @@ poetry run pytest docs_tests/
 
 ### Before Committing
 
-Always run these checks before committing documentation changes:
+A **pre-commit hook** automatically validates markdown style on staged files. The hook checks:
+
+- No emojis in markdown headers
+- Blank lines before lists
+- No trailing whitespace
+- Files end with newline
+- MkDocs builds successfully
+
+**To manually validate markdown files:**
+
+```bash
+# Check specific files
+python3 scripts/validate_markdown_style.py docs/kits/cache.md
+
+# Check all markdown files
+find docs -name "*.md" -exec python3 scripts/validate_markdown_style.py {} +
+```
+
+**Additional manual checks:**
 
 1. **Build with strict mode**: `poetry run mkdocs build --strict` must show 0 errors
 2. **Preview locally**: `poetry run mkdocs serve` and manually check the pages
 3. **Verify navigation**: Ensure new pages are added to `mkdocs.yml` in alphabetical order
 4. **Check links**: Verify all internal links work correctly
-5. **No emojis in titles**: Grep for emojis in headers: `grep -rn "^###.*✅" docs/` should return nothing
-6. **Lists have blank lines**: Verify all lists have a blank line before them (prevents rendering as text)
+
+**Bypassing the hook** (not recommended):
+
+```bash
+git commit --no-verify
+```
+
+See `scripts/README.md` for detailed documentation on validation scripts and the pre-commit hook.
 
 ### File Organization
 
@@ -182,6 +207,7 @@ For domain models, refer to [Job Domain Models](job.md#domain-models).
 ### Best Practices Section Format
 
 Each best practice should:
+
 - Have a numbered heading without emoji (e.g., `### 1. Keep Handlers Stateless`)
 - Start with a brief explanation
 - Include a code example showing the good approach (with `# ✅ GOOD` comment)

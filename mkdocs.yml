@@ -129,7 +129,18 @@ nav:
     - Vector Store Port: ports/vector_store.md
   - Kits:
     - Overview: kits/index.md
+    - Audit Kit: kits/audit.md
+    - Auth Kit: kits/auth.md
+    - Cache Kit: kits/cache.md
+    - FastAPI Kit: kits/fastapi.md
+    - File Storage Kit: kits/file_storage.md
+    - Group Kit: kits/group.md
     - Hierarchy Kit: kits/hierarchy.md
+    - Job Kit: kits/job.md
+    - LLM Kit: kits/llm.md
+    - RAG Kit: kits/rag.md
+    - RBAC Kit: kits/rbac.md
   - Adapters:
     - Overview: adapters/index.md
+    - All Adapters: adapters/adapters.md
   - Compose: compose.md
